@@ -1,22 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function MobilePage() {
-  // Hardcoded taste profile stays the same
-  const tasteProfile = {
-    id: "12345",
-    user: "TestUser",
-    taste_sweet: 75,
-    taste_salty: 40,
-    taste_bitter: 20,
-    taste_sour: 55,
-    taste_umami: 85,
-    quality: 90,
-    dilution: 30, // in %
-  };
+  const tasteProfiles = [
+    {
+      letter: "A",
+      data: {
+        taste_sweet: 75,
+        taste_salty: 40,
+        taste_bitter: 20,
+        taste_sour: 55,
+        taste_umami: 85,
+        quality: 90,
+        dilution: 30,
+      },
+    },
+    {
+      letter: "B",
+      data: {
+        taste_sweet: 60,
+        taste_salty: 70,
+        taste_bitter: 35,
+        taste_sour: 45,
+        taste_umami: 65,
+        quality: 80,
+        dilution: 25,
+      },
+    },
+    {
+      letter: "C",
+      data: {
+        taste_sweet: 50,
+        taste_salty: 30,
+        taste_bitter: 60,
+        taste_sour: 40,
+        taste_umami: 55,
+        quality: 75,
+        dilution: 20,
+      },
+    },
+  ];
 
-  const defaultSensorValues = {
+  const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
+  const [sensorValues, setSensorValues] = useState({
     mq3_ppm: 0.368,
     as7263_r: 3.09,
     as7263_s: 1.79,
@@ -24,25 +51,24 @@ export default function MobilePage() {
     as7263_u: 0.85,
     as7263_v: 0.88,
     as7263_w: 1.12,
-  };
-
-  const [sensorValues, setSensorValues] = useState(defaultSensorValues);
+  });
   const [loadingSensors, setLoadingSensors] = useState(false);
   const [sensorError, setSensorError] = useState("");
 
+  const hasProfileChangedRef = useRef(false); // prevent multiple profile changes for repeated 0s
+
   useEffect(() => {
     const fetchSensorValues = async () => {
-      setLoadingSensors(true);
-      setSensorError("");
       try {
         const res = await fetch(
           "https://photontroppers.onrender.com/livesensor"
         );
-        if (!res.ok) {
-          throw new Error(`HTTP error ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+
         const json = await res.json();
-        if (json.status === "success" && json.data) {
+        const data = json?.data;
+
+        if (json.status === "success" && data) {
           const {
             mq3_ppm,
             as7263_r,
@@ -51,33 +77,62 @@ export default function MobilePage() {
             as7263_u,
             as7263_v,
             as7263_w,
-          } = json.data;
+          } = data;
 
-          setSensorValues({
-            mq3_ppm,
-            as7263_r,
-            as7263_s,
-            as7263_t,
-            as7263_u,
-            as7263_v,
-            as7263_w,
-          });
+          const isAllZero =
+            mq3_ppm === 0 &&
+            as7263_r === 0 &&
+            as7263_s === 0 &&
+            as7263_t === 0 &&
+            as7263_u === 0 &&
+            as7263_v === 0 &&
+            as7263_w === 0;
+
+          if (isAllZero) {
+            // Show loading
+            setLoadingSensors(true);
+
+            // Only change profile ONCE per zero-state
+            if (!hasProfileChangedRef.current) {
+              setCurrentProfileIndex(
+                (prev) => (prev + 1) % tasteProfiles.length
+              );
+              hasProfileChangedRef.current = true;
+            }
+          } else {
+            // Hide loading
+            setLoadingSensors(false);
+
+            // Reset ref so next all-zero can trigger profile change
+            hasProfileChangedRef.current = false;
+
+            // Update live sensor values
+            setSensorValues({
+              mq3_ppm,
+              as7263_r,
+              as7263_s,
+              as7263_t,
+              as7263_u,
+              as7263_v,
+              as7263_w,
+            });
+          }
+
+          setSensorError("");
         } else {
           throw new Error("Invalid data structure");
         }
       } catch (err) {
-        setSensorError("Failed to fetch sensor data");
         console.error(err);
-      } finally {
-        setLoadingSensors(false);
+        setSensorError("Failed to fetch sensor data");
       }
     };
 
-    fetchSensorValues();
+    const intervalId = setInterval(fetchSensorValues, 1000);
+    return () => clearInterval(intervalId);
   }, []);
 
-  // Hardcoded letter for now
-  const letter = "A";
+  const { letter, data: tasteProfile } = tasteProfiles[currentProfileIndex];
 
   return (
     <div className="relative h-screen w-screen flex bg-white overflow-hidden">
@@ -108,22 +163,20 @@ export default function MobilePage() {
               Taste Profile
             </h2>
 
-            {Object.entries(tasteProfile)
-              .filter(([key]) => !["id", "user"].includes(key))
-              .map(([key, value]) => (
-                <div
-                  key={key}
-                  className="flex justify-between select-none mb-2 text-sm text-gray-800"
-                >
-                  <span className="capitalize font-semibold">
-                    {key.replace(/_/g, " ")}:
-                  </span>
-                  <span className="font-mono">
-                    {value}
-                    {key === "dilution" ? "%" : ""}
-                  </span>
-                </div>
-              ))}
+            {Object.entries(tasteProfile).map(([key, value]) => (
+              <div
+                key={key}
+                className="flex justify-between select-none mb-2 text-sm text-gray-800"
+              >
+                <span className="capitalize font-semibold">
+                  {key.replace(/_/g, " ")}:
+                </span>
+                <span className="font-mono text-base">
+                  {value}
+                  {key === "dilution" ? "%" : ""}
+                </span>
+              </div>
+            ))}
           </section>
 
           {/* Sensor Values */}
@@ -137,13 +190,13 @@ export default function MobilePage() {
               )}
             </h2>
 
-            <div className="text-gray-700 text-sm space-y-2 max-h-full">
+            <div className="text-gray-700 text-base space-y-2 max-h-full">
               {Object.entries(sensorValues).map(([key, value]) => (
                 <div key={key} className="flex justify-between select-none">
                   <span className="capitalize font-semibold w-28">
                     {key.replace(/_/g, " ")}:
                   </span>
-                  <span className="font-mono text-sm">{value}</span>
+                  <span className="font-mono">{value}</span>
                 </div>
               ))}
             </div>
