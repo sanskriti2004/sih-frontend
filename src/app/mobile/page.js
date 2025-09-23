@@ -136,27 +136,24 @@ export default function MobilePage() {
 
   return (
     <div className="relative h-screen w-screen flex bg-white overflow-hidden">
-      {/* Loading overlay */}
-      {loadingSensors && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white bg-opacity-40 text-green-700 text-6xl font-semibold select-none">
-          Loading sensor data...
-        </div>
-      )}
-
       {/* Left big letter */}
       <div className="w-1/2 bg-green-700 flex items-center justify-center">
         <span className="text-white text-[55vw] font-bold select-none">
           {letter}
         </span>
       </div>
-
       {/* Right panel with two columns */}
-      <div className="w-1/2 flex flex-col p-4 overflow-hidden">
+      <div className="w-1/2 flex flex-col p-4 overflow-hidden relative">
         <h1 className="text-2xl font-bold mb-4 text-green-800 select-none mt-4">
           Details About the Sample
         </h1>
 
         <div className="flex flex-1 space-x-4 mt-3">
+          {loadingSensors && (
+            <div className="absolute inset-0  flex items-center justify-center bg-white bg-opacity-60 text-green-700 text-xl font-semibold select-none">
+              Loading sensor data...
+            </div>
+          )}
           {/* Taste Profile */}
           <section className="w-2/5 overflow-hidden">
             <h2 className="text-lg font-semibold mb-3 border-b border-green-300 pb-1 text-green-800">
