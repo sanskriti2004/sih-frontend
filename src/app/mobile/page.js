@@ -44,13 +44,13 @@ export default function MobilePage() {
 
   const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
   const [sensorValues, setSensorValues] = useState({
-    mq3_ppm: 0.368,
-    as7263_r: 3.09,
-    as7263_s: 1.79,
-    as7263_t: 1.63,
-    as7263_u: 0.85,
-    as7263_v: 0.88,
-    as7263_w: 1.12,
+    mq3_ppm: 0,
+    as7263_r: 0,
+    as7263_s: 0,
+    as7263_t: 0,
+    as7263_u: 0,
+    as7263_v: 0,
+    as7263_w: 0,
   });
   const [loadingSensors, setLoadingSensors] = useState(false);
   const [sensorError, setSensorError] = useState("");
@@ -156,9 +156,9 @@ export default function MobilePage() {
           Details About the Sample
         </h1>
 
-        <div className="flex flex-1 space-x-4 mt-5">
+        <div className="flex flex-1 space-x-4 mt-3">
           {/* Taste Profile */}
-          <section className="w-1/2 overflow-hidden">
+          <section className="w-2/5 overflow-hidden">
             <h2 className="text-lg font-semibold mb-3 border-b border-green-300 pb-1 text-green-800">
               Taste Profile
             </h2>
@@ -180,7 +180,7 @@ export default function MobilePage() {
           </section>
 
           {/* Sensor Values */}
-          <section className="w-1/2 overflow-auto">
+          <section className="w-3/5 overflow-auto">
             <h2 className="text-lg font-semibold mb-3 border-b border-green-300 pb-1 text-green-800 flex justify-between items-center">
               Sensor Values
               {sensorError && (
