@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 
 export default function MobilePage() {
   const tasteProfiles = [
@@ -136,12 +137,32 @@ export default function MobilePage() {
 
   return (
     <div className="relative h-screen w-screen flex bg-white overflow-hidden">
-      {/* Left big letter */}
-      <div className="w-1/2 bg-green-700 flex items-center justify-center">
-        <span className="text-white text-[55vw] font-bold select-none">
-          {letter}
-        </span>
+      {/* Left big letter or loading illustration */}
+      <div className="w-1/2 bg-green-700 flex items-center justify-center relative">
+        {loadingSensors ? (
+          <div className="flex flex-col items-center z-10">
+            <Image
+              src="/favicon.png"
+              alt="Loading"
+              width={120} // 96px = w-24 in Tailwind
+              height={120} // 96px = h-24
+              className="animate-pulse mb-4"
+            />
+            {/* <p className="text-white text-lg font-semibold select-none">
+              Please place the next sample...
+            </p> */}
+          </div>
+        ) : (
+          <span className="text-white text-[55vw] font-bold select-none z-10">
+            {letter}
+          </span>
+        )}
+
+        {loadingSensors && (
+          <div className="absolute inset-0 bg-green-700 bg-opacity-20 backdrop-blur-sm"></div>
+        )}
       </div>
+
       {/* Right panel with two columns */}
       <div className="w-1/2 flex flex-col p-4 overflow-hidden relative">
         <h1 className="text-2xl font-bold mb-4 text-green-800 select-none mt-4">
@@ -151,7 +172,7 @@ export default function MobilePage() {
         <div className="flex flex-1 space-x-4 mt-3">
           {loadingSensors && (
             <div className="absolute inset-0  flex items-center justify-center bg-white bg-opacity-60 text-green-700 text-xl font-semibold select-none">
-              Loading sensor data...
+              Please place the next sample...
             </div>
           )}
           {/* Taste Profile */}

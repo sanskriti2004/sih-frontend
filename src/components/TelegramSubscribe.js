@@ -129,14 +129,14 @@ const TelegramSubscribe = () => {
       ) : (
         <div>
           <p style={styles.infoText}>
-            Copy this message to the{" "}
+            Copy this message to the bot.{" "}
             <a
               href={botLink}
               target="_blank"
               rel="noopener noreferrer"
               style={styles.botLink}
             >
-              bot
+              Link
             </a>
           </p>
 
