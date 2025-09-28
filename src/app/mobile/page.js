@@ -57,6 +57,7 @@ export default function MobilePage() {
   const [sensorError, setSensorError] = useState("");
 
   const hasProfileChangedRef = useRef(false); // prevent multiple profile changes for repeated 0s
+  const cycleCounterRef = useRef(0); // Track custom pattern: A, A, B
 
   useEffect(() => {
     const fetchSensorValues = async () => {
@@ -90,24 +91,24 @@ export default function MobilePage() {
             as7263_w === 0;
 
           if (isAllZero) {
-            // Show loading
             setLoadingSensors(true);
 
-            // Only change profile ONCE per zero-state
             if (!hasProfileChangedRef.current) {
-              setCurrentProfileIndex(
-                (prev) => (prev + 1) % tasteProfiles.length
-              );
+              const cycleIndex = cycleCounterRef.current % 3;
+
+              if (cycleIndex === 0 || cycleIndex === 1) {
+                setCurrentProfileIndex(0); // A
+              } else {
+                setCurrentProfileIndex(1); // B
+              }
+
+              cycleCounterRef.current += 1;
               hasProfileChangedRef.current = true;
             }
           } else {
-            // Hide loading
             setLoadingSensors(false);
-
-            // Reset ref so next all-zero can trigger profile change
             hasProfileChangedRef.current = false;
 
-            // Update live sensor values
             setSensorValues({
               mq3_ppm,
               as7263_r,
@@ -144,13 +145,10 @@ export default function MobilePage() {
             <Image
               src="/favicon.png"
               alt="Loading"
-              width={120} // 96px = w-24 in Tailwind
-              height={120} // 96px = h-24
+              width={120}
+              height={120}
               className="animate-pulse mb-4"
             />
-            {/* <p className="text-white text-lg font-semibold select-none">
-              Please place the next sample...
-            </p> */}
           </div>
         ) : (
           <span className="text-white text-[55vw] font-bold select-none z-10">
@@ -171,10 +169,11 @@ export default function MobilePage() {
 
         <div className="flex flex-1 space-x-4 mt-3">
           {loadingSensors && (
-            <div className="absolute inset-0  flex items-center justify-center bg-white bg-opacity-60 text-green-700 text-xl font-semibold select-none">
+            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-60 text-green-700 text-xl font-semibold select-none">
               Please place the next sample...
             </div>
           )}
+
           {/* Taste Profile */}
           <section className="w-2/5 overflow-hidden">
             <h2 className="text-lg font-semibold mb-3 border-b border-green-300 pb-1 text-green-800">
