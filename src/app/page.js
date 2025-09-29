@@ -47,7 +47,7 @@ export default function Home() {
 
             <input
               type="text"
-              placeholder="Enter Medicine Name"
+              placeholder="Enter Herb Name"
               value={medicineName}
               onChange={(e) => setMedicineName(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
